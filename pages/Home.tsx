@@ -1,56 +1,40 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { PRODUCTS as initialProducts } from '../constants';
 import JsonLd from '../components/JsonLd';
 import { VendorLogo, Product } from '../types';
 
 const Home: React.FC = () => {
-  const [vendorLogos, setVendorLogos] = useState<VendorLogo[]>([]);
-  const [activeCategory, setActiveCategory] = useState('All Solutions');
+  // Lazy initialization ensures data is available on the very first render
+  const [vendorLogos] = useState<VendorLogo[]>(() => {
+    const saved = localStorage.getItem('marketplaceVendorLogos');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 'd1', name: 'Microsoft', image: 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg' },
+      { id: 'd2', name: 'Tally', image: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Tally_Solutions_Logo.svg' },
+      { id: 'd3', name: 'Airtel', image: 'https://upload.wikimedia.org/wikipedia/commons/f/f3/Airtel_logo.svg' },
+      { id: 'd4', name: 'Zoho', image: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Zoho_Corporation_logo.svg' },
+      { id: 'd5', name: 'Jio', image: 'https://upload.wikimedia.org/wikipedia/commons/5/50/Reliance_Jio_Logo.svg' },
+      { id: 'd6', name: 'AWS', image: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg' }
+    ];
+  });
+
+  const [allProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem('marketplaceProducts');
+    if (saved) return JSON.parse(saved);
+    return initialProducts;
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
+  const [activeCategory] = useState('All Solutions');
 
-  useEffect(() => {
-    document.title = "BantConfirm - India's Smartest B2B AI Marketplace";
+  // Filter products based on search
+  const displayProducts = useMemo(() => {
+    let filtered = [...allProducts];
+    // Sort by ID descending to show newest first
+    filtered.sort((a, b) => Number(b.id) - Number(a.id));
 
-    const savedLogos = localStorage.getItem('marketplaceVendorLogos');
-    if (savedLogos) {
-      setVendorLogos(JSON.parse(savedLogos));
-    } else {
-      const defaults: VendorLogo[] = [
-        { id: 'd1', name: 'Microsoft', image: 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg' },
-        { id: 'd2', name: 'Tally', image: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Tally_Solutions_Logo.svg' },
-        { id: 'd3', name: 'Airtel', image: 'https://upload.wikimedia.org/wikipedia/commons/f/f3/Airtel_logo.svg' },
-        { id: 'd4', name: 'Zoho', image: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Zoho_Corporation_logo.svg' },
-        { id: 'd5', name: 'Jio', image: 'https://upload.wikimedia.org/wikipedia/commons/5/50/Reliance_Jio_Logo.svg' },
-        { id: 'd6', name: 'AWS', image: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg' }
-      ];
-      setVendorLogos(defaults);
-      localStorage.setItem('marketplaceVendorLogos', JSON.stringify(defaults));
-    }
-
-    const savedProducts = localStorage.getItem('marketplaceProducts');
-    if (savedProducts) {
-      setAllProducts(JSON.parse(savedProducts));
-    } else {
-      setAllProducts(initialProducts);
-      localStorage.setItem('marketplaceProducts', JSON.stringify(initialProducts));
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add('reveal-visible');
-      });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    let filtered = allProducts;
     if (activeCategory !== 'All Solutions') {
       filtered = filtered.filter(p => p.category.toLowerCase() === activeCategory.toLowerCase());
     }
@@ -60,11 +44,31 @@ const Home: React.FC = () => {
         p.shortDescription.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    setDisplayProducts(filtered.slice(0, 4));
-  }, [activeCategory, searchQuery, allProducts]);
+    return filtered;
+  }, [allProducts, searchQuery, activeCategory]);
+
+  useEffect(() => {
+    document.title = "BantConfirm - India's Smartest B2B AI Marketplace";
+
+    // Setup Intersection Observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal-visible');
+        }
+      });
+    }, { threshold: 0.05 });
+
+    // We observe all elements with 'reveal' class. 
+    // Since displayProducts is calculated, we re-run this when products change.
+    const elements = document.querySelectorAll('.reveal');
+    elements.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [displayProducts]); // Re-attach observer when products list updates
 
   return (
-    <div className="pt-32 overflow-hidden bg-transparent text-slate-900">
+    <div className="pt-32 overflow-hidden bg-transparent text-slate-900 font-['Plus_Jakarta_Sans']">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "Organization", "name": "BantConfirm", "url": "https://bantconfirm.com" }} />
       
       {/* Hero Section */}
@@ -100,12 +104,12 @@ const Home: React.FC = () => {
 
         {/* Vendor Logo Marquee */}
         <div className="reveal reveal-delay-5 py-16 relative overflow-hidden border-y border-slate-100 bg-white/40 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-4 mb-8">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600 text-center">Empowering Businesses with Global Partners</h4>
+          <div className="max-w-7xl mx-auto px-4 mb-8 text-center">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">Empowering Businesses with Global Partners</h4>
           </div>
           <div className="flex relative w-full overflow-hidden">
             <div className="flex animate-marquee space-x-16 md:space-x-32 whitespace-nowrap py-4 items-center">
-              {[...vendorLogos, ...vendorLogos, ...vendorLogos].map((logo, idx) => (
+              {[...vendorLogos, ...vendorLogos].map((logo, idx) => (
                 <div key={`${logo.id}-${idx}`} className="flex-shrink-0 w-32 md:w-40 flex items-center justify-center filter grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
                   <img src={logo.image} alt={logo.name} className="max-h-12 max-w-full object-contain" />
                 </div>
@@ -132,7 +136,6 @@ const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Card 1 */}
             <div className="reveal reveal-delay-1 bg-white p-10 rounded-[48px] border border-slate-50 shadow-xl shadow-slate-200/40 hover:-translate-y-2 transition-all duration-500 flex flex-col group">
               <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-[24px] flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">⚡</div>
               <h4 className="text-2xl font-black text-[#1e293b] mb-4 leading-tight">AI-Qualified Requirements</h4>
@@ -144,7 +147,6 @@ const Home: React.FC = () => {
               </Link>
             </div>
 
-            {/* Card 2 */}
             <div className="reveal reveal-delay-2 bg-white p-10 rounded-[48px] border border-slate-50 shadow-xl shadow-slate-200/40 hover:-translate-y-2 transition-all duration-500 flex flex-col group">
               <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-[24px] flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">🏢</div>
               <h4 className="text-2xl font-black text-[#1e293b] mb-4 leading-tight">Verified Vendor Network</h4>
@@ -156,7 +158,6 @@ const Home: React.FC = () => {
               </Link>
             </div>
 
-            {/* Card 3 */}
             <div className="reveal reveal-delay-3 bg-white p-10 rounded-[48px] border border-slate-50 shadow-xl shadow-slate-200/40 hover:-translate-y-2 transition-all duration-500 flex flex-col group">
               <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-[24px] flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">🔑</div>
               <h4 className="text-2xl font-black text-[#1e293b] mb-4 leading-tight">Enterprise Licensing</h4>
@@ -168,7 +169,6 @@ const Home: React.FC = () => {
               </Link>
             </div>
 
-            {/* Card 4 */}
             <div className="reveal reveal-delay-4 bg-white p-10 rounded-[48px] border border-slate-50 shadow-xl shadow-slate-200/40 hover:-translate-y-2 transition-all duration-500 flex flex-col group">
               <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-[24px] flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">🛠️</div>
               <h4 className="text-2xl font-black text-[#1e293b] mb-4 leading-tight">IT Infrastructure Support</h4>
@@ -180,6 +180,65 @@ const Home: React.FC = () => {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Find Right Solutions - Perfectly Centered Layout */}
+      <section className="py-32 px-4 relative overflow-hidden bg-[#fcfdff]">
+        <div className="max-w-7xl mx-auto">
+          <div className="reveal mb-20 text-center flex flex-col items-center">
+            <h2 className="text-5xl md:text-6xl font-black text-[#1e293b] tracking-tighter mb-4">Find Right Solutions</h2>
+            <p className="text-slate-400 font-bold text-sm md:text-base uppercase tracking-[0.25em] mb-12">
+              BROWSE CRM, ERP, CLOUD TELEPHONY, AND IT HARDWARE.
+            </p>
+            
+            <div className="reveal reveal-delay-1 relative w-full max-w-4xl">
+               <div className="absolute inset-y-0 left-8 flex items-center pointer-events-none text-slate-400">
+                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+               </div>
+               <input 
+                 type="text" 
+                 placeholder="Search Solutions"
+                 className="w-full bg-white border border-slate-200 rounded-full py-8 pl-20 pr-10 text-xl text-slate-700 font-bold focus:ring-8 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none shadow-2xl shadow-slate-200/20"
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {displayProducts.map((product, i) => (
+              <div key={product.id} className="reveal bg-white rounded-[64px] overflow-hidden border border-slate-100 shadow-xl hover:shadow-2xl transition-all duration-700 flex flex-col group p-3">
+                <div className="relative h-80 rounded-[56px] overflow-hidden bg-slate-100">
+                  <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                  <div className="absolute top-8 right-8 bg-white/95 backdrop-blur px-5 py-2.5 rounded-2xl flex items-center gap-2 shadow-xl border border-white">
+                     <span className="text-amber-500 font-black text-sm">★</span>
+                     <span className="text-[#1e293b] font-black text-base">{product.rating}</span>
+                  </div>
+                  <div className="absolute bottom-8 left-8 bg-blue-600/95 backdrop-blur px-6 py-2.5 rounded-2xl text-[11px] font-black text-white uppercase tracking-widest shadow-2xl border border-white/20">
+                    {product.category}
+                  </div>
+                </div>
+
+                <div className="p-10 md:p-14 pt-12 flex-grow flex flex-col">
+                  <h3 className="text-3xl md:text-4xl font-black text-[#1e293b] mb-2 leading-tight">{product.name}</h3>
+                  <p className="text-slate-400 font-bold mb-12 text-sm uppercase tracking-widest leading-relaxed">{product.vendorName} • {product.price}</p>
+                  
+                  <div className="flex flex-col gap-4 mt-auto">
+                    <Link to={`/products/${product.slug}`} className="w-full py-6 bg-slate-50 text-slate-600 rounded-[28px] text-xs font-black text-center uppercase tracking-widest hover:bg-blue-50 hover:text-blue-600 transition-all">
+                      VIEW DETAILS
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {displayProducts.length === 0 && (
+            <div className="text-center py-20 bg-white rounded-[64px] border border-dashed border-slate-200">
+               <p className="text-slate-400 font-bold uppercase tracking-widest">No matching solutions found</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -198,8 +257,7 @@ const Home: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-               {/* Stat Card 1 */}
-               <div className="reveal reveal-delay-1 bg-blue-600 rounded-[56px] p-12 text-white shadow-2xl shadow-blue-600/30 flex flex-col justify-between h-80">
+               <div className="reveal bg-blue-600 rounded-[56px] p-12 text-white shadow-2xl shadow-blue-600/30 flex flex-col justify-between h-80">
                   <div>
                     <div className="flex justify-between items-start mb-10">
                       <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-3xl">🏢</div>
@@ -211,8 +269,7 @@ const Home: React.FC = () => {
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-80">PAN-INDIA SUPPORT AVAILABLE</p>
                </div>
 
-               {/* Stat Card 2 */}
-               <div className="reveal reveal-delay-2 bg-white rounded-[56px] p-12 border border-slate-100 shadow-xl flex flex-col justify-between h-80">
+               <div className="reveal bg-white rounded-[56px] p-12 border border-slate-100 shadow-xl flex flex-col justify-between h-80">
                   <div>
                     <div className="flex justify-between items-start mb-10">
                       <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl text-amber-500">⚡</div>
@@ -224,8 +281,7 @@ const Home: React.FC = () => {
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total verified leads processed</p>
                </div>
                
-               {/* Stat Card 3 */}
-               <div className="reveal reveal-delay-3 bg-[#0f172a] rounded-[56px] p-12 text-white flex flex-col relative overflow-hidden h-80 group">
+               <div className="reveal bg-[#0f172a] rounded-[56px] p-12 text-white flex flex-col relative overflow-hidden h-80 group">
                   <div className="relative z-10 h-full flex flex-col">
                     <div className="flex justify-between items-center mb-10">
                       <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">IT PROCUREMENT TRENDS</p>
@@ -243,58 +299,6 @@ const Home: React.FC = () => {
                   </div>
                </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Solutions Discovery Section */}
-      <section className="py-32 px-4 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto">
-          <div className="reveal mb-20 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-10">
-            <div>
-              <h2 className="text-4xl md:text-7xl font-black text-[#1e293b] tracking-tighter mb-4 leading-tight">Find Right Solutions</h2>
-              <p className="text-slate-500 font-bold text-lg uppercase tracking-widest">Browse CRM, ERP, Cloud Telephony, and IT Hardware.</p>
-            </div>
-            <div className="reveal reveal-delay-1 relative w-full md:w-[480px]">
-               <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-slate-400">
-                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-               </div>
-               <input 
-                 type="text" 
-                 placeholder="Search Solutions..."
-                 className="w-full bg-white border border-slate-200 rounded-[32px] py-7 pl-16 pr-8 text-base text-slate-700 font-bold focus:ring-8 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none shadow-2xl shadow-slate-200/40"
-                 value={searchQuery}
-                 onChange={(e) => setSearchQuery(e.target.value)}
-               />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {displayProducts.map((product, i) => (
-              <div key={product.id} className={`reveal reveal-delay-${(i % 2) + 1} bg-white rounded-[64px] overflow-hidden border border-slate-100 shadow-xl hover:shadow-2xl transition-all duration-700 flex flex-col group p-3`}>
-                <div className="relative h-80 rounded-[56px] overflow-hidden bg-slate-100">
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
-                  <div className="absolute top-8 right-8 bg-white/95 backdrop-blur px-5 py-2.5 rounded-2xl flex items-center gap-2 shadow-xl border border-white">
-                     <span className="text-amber-500 font-black text-sm">★</span>
-                     <span className="text-[#1e293b] font-black text-base">{product.rating}</span>
-                  </div>
-                  <div className="absolute bottom-8 left-8 bg-blue-600/95 backdrop-blur px-6 py-2.5 rounded-2xl text-[11px] font-black text-white uppercase tracking-widest shadow-2xl border border-white/20">
-                    {product.category}
-                  </div>
-                </div>
-
-                <div className="p-10 md:p-14 pt-12 flex-grow flex flex-col">
-                  <h3 className="text-4xl font-black text-[#1e293b] mb-2">{product.name}</h3>
-                  <p className="text-slate-400 font-bold mb-12 text-sm uppercase tracking-widest leading-relaxed">{product.vendorName} • {product.price}</p>
-                  
-                  <div className="flex flex-col gap-4 mt-auto">
-                    <Link to={`/products/${product.slug}`} className="w-full py-5 bg-slate-50 text-slate-600 rounded-[28px] text-xs font-black text-center uppercase tracking-widest hover:bg-blue-50 hover:text-blue-600 transition-all">
-                      VIEW DETAILS
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
