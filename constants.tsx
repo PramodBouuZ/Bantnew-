@@ -1,0 +1,147 @@
+
+import { Product, BlogPost } from './types';
+
+export const PRODUCTS: Product[] = [
+  {
+    id: '1',
+    name: 'Bulk Email',
+    slug: 'bulk-email',
+    shortDescription: 'Send emails to large recipient lists',
+    description: 'Enterprise-grade email automation with CRM integration, high deliverability, and real-time analytics for your marketing campaigns.',
+    category: 'Software',
+    price: '5000/Month',
+    pricingType: 'subscription',
+    image: 'https://images.unsplash.com/photo-1557200134-90327ee9fafa?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1557200134-90327ee9fafa?auto=format&fit=crop&q=80&w=800'],
+    rating: 5,
+    features: ['Easy integration with CRM and applications', 'High delivery rate with fast routing', 'Secure and scalable infrastructure'],
+    vendorName: 'SendX Solutions',
+    vendorRating: 4.8
+  },
+  {
+    id: '2',
+    name: 'Bulk SMS',
+    slug: 'bulk-sms',
+    shortDescription: 'Send instant messages to large audiences',
+    description: 'High-speed SMS routing with global reach. Perfect for OTPs, marketing blasts, and customer notifications.',
+    category: 'Marketing',
+    price: '0.15 Paise',
+    pricingType: 'usage',
+    image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=800'],
+    rating: 4.6,
+    features: ['High delivery rate with fast routing', 'Ideal for OTPs', 'Secure API access'],
+    vendorName: 'ConnectFlow India',
+    vendorRating: 4.5
+  },
+  {
+    id: '3',
+    name: 'Tollfree Number',
+    slug: 'tollfree-number',
+    shortDescription: 'Enhance your customers experience',
+    description: 'Dedicated support lines with intelligent IVR routing and call recording to build trust with your customers.',
+    category: 'Telecom',
+    price: '2500/Month',
+    pricingType: 'subscription',
+    image: 'https://images.unsplash.com/photo-1534536281715-e28d76689b4d?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1534536281715-e28d76689b4d?auto=format&fit=crop&q=80&w=800'],
+    rating: 5,
+    features: ['IVR Routing', 'Call Router', '24/7 Availability'],
+    vendorName: 'VoIP Pro Global',
+    vendorRating: 4.9
+  },
+  {
+    id: '4',
+    name: 'Cloud Telephony Solution',
+    slug: 'cloud-telephony',
+    shortDescription: 'Cloud based dialer with complete tracking',
+    description: 'A complete business calling system hosted on the cloud. No physical hardware required. Includes recording, IVR, and tollfree number.',
+    category: 'Telecom',
+    price: '500/Users',
+    pricingType: 'subscription',
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'],
+    rating: 5,
+    features: ['Business calling system hosted on the cloud', 'No physical hardware required', 'Complete call tracking'],
+    vendorName: 'CloudFirst Partners',
+    vendorRating: 4.7
+  },
+  {
+    id: '5',
+    name: 'HRMS Software',
+    slug: 'hrms-software',
+    shortDescription: 'Streamline your HR and Payroll processes',
+    description: 'Automated attendance, payroll, and performance management. Compliant with Indian labor laws and tax regulations.',
+    category: 'Software',
+    price: '150/User',
+    pricingType: 'subscription',
+    image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=800'],
+    rating: 4.9,
+    features: ['Automated Payroll Processing', 'Employee Self-Service Portal', 'Leave & Attendance Tracking'],
+    vendorName: 'PeopleFlow Tech',
+    vendorRating: 4.8
+  },
+  {
+    id: '6',
+    name: 'Inventory Management',
+    slug: 'inventory-management',
+    shortDescription: 'Real-time stock tracking and optimization',
+    description: 'Manage multi-warehouse stock levels, generate purchase orders, and sync with your POS system automatically.',
+    category: 'Software',
+    price: '2000/Month',
+    pricingType: 'subscription',
+    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800'],
+    rating: 4.7,
+    features: ['Barcode Integration', 'Multi-Warehouse Support', 'Low Stock Alerts'],
+    vendorName: 'StockSmart Solutions',
+    vendorRating: 4.6
+  },
+  {
+    id: '7',
+    name: 'Internet Leased Line',
+    slug: 'internet-leased-line',
+    shortDescription: 'Dedicated high-speed connectivity',
+    description: 'Secure, dedicated internet bandwidth for your enterprise with 99.9% uptime SLA and 1:1 contention ratio.',
+    category: 'Telecom',
+    price: '₹5000/Month',
+    pricingType: 'subscription',
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800'],
+    rating: 4.8,
+    features: ['Symmetric Bandwidth', 'Dedicated Customer Support', 'Static IP Included'],
+    vendorName: 'Airtel Enterprise',
+    vendorRating: 4.9
+  },
+  {
+    id: '8',
+    name: 'NextGen Firewall',
+    slug: 'nextgen-firewall',
+    shortDescription: 'Advanced security for your IT infrastructure',
+    description: 'Protect your business from cyber threats with deep packet inspection, intrusion prevention, and secure VPN access.',
+    category: 'IT Hardware',
+    price: '₹45,000',
+    pricingType: 'one-time',
+    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc48?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1558494949-ef010cbdcc48?auto=format&fit=crop&q=80&w=800'],
+    rating: 4.9,
+    features: ['Threat Intelligence Sync', 'Sandboxing Technology', 'Unified Threat Management'],
+    vendorName: 'SecureNet Systems',
+    vendorRating: 4.7
+  }
+];
+
+export const BLOG_POSTS: BlogPost[] = [
+  {
+    id: '1',
+    title: 'The Future of B2B Procurement with AI',
+    slug: 'future-b2b-procurement-ai',
+    excerpt: 'How AI is disrupting traditional procurement methods and saving enterprises millions.',
+    content: 'The landscape of B2B procurement is undergoing a seismic shift...',
+    author: 'SEO Architect',
+    category: 'Insights',
+    date: 'March 15, 2024',
+    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=1200'
+  }
+];

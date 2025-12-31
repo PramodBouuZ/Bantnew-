@@ -1,0 +1,8 @@
+{
+  "name": "BantConfirm - B2B AI Marketplace",
+  "description": "An AI-powered B2B marketplace for MSMEs and Enterprises, specializing in software, IT hardware, and services using AI-driven BANT lead qualification.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
