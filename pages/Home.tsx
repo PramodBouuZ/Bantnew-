@@ -59,13 +59,17 @@ const Home: React.FC = () => {
       });
     }, { threshold: 0.05 });
 
-    // We observe all elements with 'reveal' class. 
-    // Since displayProducts is calculated, we re-run this when products change.
-    const elements = document.querySelectorAll('.reveal');
-    elements.forEach(el => observer.observe(el));
+    // Ensure we wait a tiny bit for the DOM to be ready with the displayProducts
+    const timer = setTimeout(() => {
+      const elements = document.querySelectorAll('.reveal');
+      elements.forEach(el => observer.observe(el));
+    }, 100);
 
-    return () => observer.disconnect();
-  }, [displayProducts]); // Re-attach observer when products list updates
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [displayProducts]); 
 
   return (
     <div className="pt-32 overflow-hidden bg-transparent text-slate-900 font-['Plus_Jakarta_Sans']">
@@ -183,7 +187,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Find Right Solutions - Perfectly Centered Layout */}
+      {/* Find Right Solutions - Centered Layout */}
       <section className="py-32 px-4 relative overflow-hidden bg-[#fcfdff]">
         <div className="max-w-7xl mx-auto">
           <div className="reveal mb-20 text-center flex flex-col items-center">
